@@ -490,7 +490,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Function to handle share button clicks
   function handleShare(platform, activityName, description) {
     const urls = generateShareUrls(activityName, description);
-    window.open(urls[platform], '_blank', 'width=600,height=400');
+    
+    // Email links should use direct navigation instead of popup
+    if (platform === 'email') {
+      window.location.href = urls[platform];
+    } else {
+      window.open(urls[platform], '_blank', 'width=600,height=400');
+    }
   }
 
   // Function to copy link to clipboard
@@ -638,16 +644,21 @@ document.addEventListener("DOMContentLoaded", () => {
         const activityName = event.currentTarget.dataset.activity;
         const description = details.description;
         
-        if (event.currentTarget.classList.contains('share-twitter')) {
-          handleShare('twitter', activityName, description);
-        } else if (event.currentTarget.classList.contains('share-facebook')) {
-          handleShare('facebook', activityName, description);
-        } else if (event.currentTarget.classList.contains('share-linkedin')) {
-          handleShare('linkedin', activityName, description);
-        } else if (event.currentTarget.classList.contains('share-email')) {
-          handleShare('email', activityName, description);
-        } else if (event.currentTarget.classList.contains('share-copy')) {
+        // Extract platform from class name (e.g., 'share-twitter' -> 'twitter')
+        const classList = event.currentTarget.classList;
+        let platform = null;
+        
+        for (let className of classList) {
+          if (className.startsWith('share-') && className !== 'share-button' && className !== 'share-icon') {
+            platform = className.replace('share-', '');
+            break;
+          }
+        }
+        
+        if (platform === 'copy') {
           copyActivityLink(activityName, description);
+        } else if (platform) {
+          handleShare(platform, activityName, description);
         }
       });
     });
