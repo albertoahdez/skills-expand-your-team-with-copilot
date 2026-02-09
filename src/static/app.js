@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateDarkModeButton(isDarkMode) {
     const icon = darkModeToggle.querySelector(".icon");
-    const text = darkModeToggle.querySelector("span:not(.icon)");
+    const text = darkModeToggle.querySelector(".text");
     
     if (isDarkMode) {
       icon.textContent = "☀️";
