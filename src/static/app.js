@@ -25,6 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
 
+  // Dark mode toggle element
+  const darkModeToggle = document.getElementById("dark-mode-toggle");
+
   // Activity categories with corresponding colors
   const activityTypes = {
     sports: { label: "Sports", color: "#e8f5e9", textColor: "#2e7d32" },
@@ -96,6 +99,35 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     fetchActivities();
+  }
+
+  // Dark mode functionality
+  function initializeDarkMode() {
+    // Check if dark mode is saved in localStorage
+    const isDarkMode = localStorage.getItem("darkMode") === "true";
+    if (isDarkMode) {
+      document.body.classList.add("dark-mode");
+      updateDarkModeButton(true);
+    }
+  }
+
+  function toggleDarkMode() {
+    const isDarkMode = document.body.classList.toggle("dark-mode");
+    localStorage.setItem("darkMode", isDarkMode);
+    updateDarkModeButton(isDarkMode);
+  }
+
+  function updateDarkModeButton(isDarkMode) {
+    const icon = darkModeToggle.querySelector(".icon");
+    const text = darkModeToggle.querySelector(".text");
+    
+    if (isDarkMode) {
+      icon.textContent = "☀️";
+      text.textContent = "Light";
+    } else {
+      icon.textContent = "🌙";
+      text.textContent = "Dark";
+    }
   }
 
   // Check if user is already logged in (from localStorage)
@@ -947,7 +979,11 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeRangeFilter,
   };
 
+  // Dark mode toggle event listener
+  darkModeToggle.addEventListener("click", toggleDarkMode);
+
   // Initialize app
+  initializeDarkMode();
   checkAuthentication();
   initializeFilters();
   fetchActivities();
