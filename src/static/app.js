@@ -472,6 +472,46 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Function to generate share URLs for different platforms
+  function generateShareUrls(activityName, description) {
+    const currentUrl = window.location.origin;
+    const shareUrl = `${currentUrl}?activity=${encodeURIComponent(activityName)}`;
+    const text = `Check out this activity at Mergington High: ${activityName}`;
+    const fullText = `${text} - ${description}`;
+
+    return {
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(fullText)}&url=${encodeURIComponent(shareUrl)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+      email: `mailto:?subject=${encodeURIComponent(text)}&body=${encodeURIComponent(fullText + ' ' + shareUrl)}`
+    };
+  }
+
+  // Function to handle share button clicks
+  function handleShare(platform, activityName, description) {
+    const urls = generateShareUrls(activityName, description);
+    
+    // Email links should use direct navigation instead of popup
+    if (platform === 'email') {
+      window.location.href = urls[platform];
+    } else {
+      window.open(urls[platform], '_blank', 'width=600,height=400');
+    }
+  }
+
+  // Function to copy link to clipboard
+  function copyActivityLink(activityName, description) {
+    const currentUrl = window.location.origin;
+    const shareUrl = `${currentUrl}?activity=${encodeURIComponent(activityName)}`;
+    
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      showMessage('Link copied to clipboard!', 'success');
+    }).catch(err => {
+      console.error('Failed to copy link:', err);
+      showMessage('Failed to copy link', 'error');
+    });
+  }
+
   // Function to render a single activity card
   function renderActivityCard(name, details) {
     const activityCard = document.createElement("div");
@@ -528,6 +568,26 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
       </p>
       ${capacityIndicator}
+      <div class="social-share-container">
+        <div class="share-label">Share:</div>
+        <div class="share-buttons">
+          <button class="share-button share-twitter" data-activity="${name}" title="Share on Twitter">
+            <span class="share-icon">𝕏</span>
+          </button>
+          <button class="share-button share-facebook" data-activity="${name}" title="Share on Facebook">
+            <span class="share-icon">f</span>
+          </button>
+          <button class="share-button share-linkedin" data-activity="${name}" title="Share on LinkedIn">
+            <span class="share-icon">in</span>
+          </button>
+          <button class="share-button share-email" data-activity="${name}" title="Share via Email">
+            <span class="share-icon">✉</span>
+          </button>
+          <button class="share-button share-copy" data-activity="${name}" title="Copy Link">
+            <span class="share-icon">🔗</span>
+          </button>
+        </div>
+      </div>
       <div class="participants-list">
         <h5>Current Participants:</h5>
         <ul>
@@ -575,6 +635,32 @@ document.addEventListener("DOMContentLoaded", () => {
     const deleteButtons = activityCard.querySelectorAll(".delete-participant");
     deleteButtons.forEach((button) => {
       button.addEventListener("click", handleUnregister);
+    });
+
+    // Add click handlers for share buttons
+    const shareButtons = activityCard.querySelectorAll(".share-button");
+    shareButtons.forEach((button) => {
+      button.addEventListener("click", (event) => {
+        const activityName = event.currentTarget.dataset.activity;
+        const description = details.description;
+        
+        // Extract platform from class name (e.g., 'share-twitter' -> 'twitter')
+        const classList = event.currentTarget.classList;
+        let platform = null;
+        
+        for (let className of classList) {
+          if (className.startsWith('share-') && className !== 'share-button' && className !== 'share-icon') {
+            platform = className.replace('share-', '');
+            break;
+          }
+        }
+        
+        if (platform === 'copy') {
+          copyActivityLink(activityName, description);
+        } else if (platform) {
+          handleShare(platform, activityName, description);
+        }
+      });
     });
 
     // Add click handler for register button (only when authenticated)
